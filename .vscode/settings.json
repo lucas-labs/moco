@@ -1,0 +1,14 @@
+{
+  "files.exclude": {
+    "go.sum": true,
+    ".prettierrc": true,
+    "resource.syso": true,
+    "versioninfo.json": true,
+    ".gitignore": true,
+    ".git": true,
+    ".vscode": true,
+
+    "resources": true,
+    "Makefile": true,
+  }
+}
