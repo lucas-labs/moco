@@ -4,7 +4,7 @@ port: 22222
 cors:
   - "http://localhost:8080"
   - "http://localhost:3000"
-  - "http://localhost:3001"
+  - "http://localhost:4200"
 description: ZGPT - Core API *mock*
 endpoints:
   - url: [GET, /ping]
@@ -12,31 +12,69 @@ endpoints:
 
   - url: [GET, "/user/(?P<id>\\d+)"]
     responses:
-      - [{ params: { id: "1" } }, 200, { id: 1, name: "Joe Doe" }]
-      - [{ params: { id: "2" } }, 200, { id: 2, name: "Jane Doe" }]
+      - [{ params: { id: "1" } }, 200, { id: 1, name: "lucas" }]
       - ["*", 404, { message: "User not found" }]
+      
+  - url: [GET, "/user"]
+    responses: 
+      - 
+        - isLoggedIn: true
+        - 200
+        - id: 1
+          username: lucas
 
   - url: [POST, /auth/login]
     responses:
-      - [{ body: { username: "joe", password: "123456" } }, 200, {access_token: "eyjjjj.qweqwe.asdasd", token_type: "bearer"}]
+      - 
+        - body:
+            username: lucas
+            password: "lucas78787"
+        - 200
+        - access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJ1c2VybmFtZSI6Imx1Y2FzIiwicm9sZXMiOlt7Im5hbWUiOiJCQVNJQ19VU0VSIiwicGVybWlzc2lvbnMiOlt7Im5hbWUiOiJzZXNzaW9uOmNyZWF0ZSJ9LHsibmFtZSI6InNlc3Npb246cmVhZCJ9LHsibmFtZSI6InNlc3Npb246dXBkYXRlIn1dfV19LCJleHAiOjE3NTI3MzQ0MjcsImlhdCI6MTY4ODA1ODE4OH0.Ru7EYgFZi0eV4PBdRfdSmcHqQEAQud-HHfigijMdP24
+          token_type: bearer
       - ["*", 401, { message: "Invalid credentials" }]
   
   - url: [POST, /session]
     sideEffects:
       - type: create
         entity: session
-        data: { id: _AUTONUM_, created: _NOW_, messages: [] }
+        data: { id: _AUTONUM_, created: _NOW_ }
     responses: 
       - [{isLoggedIn: true}, 200, {}]
-      - ["*", 401, { message: "Unauthorized" }]
-    childs:
-      - url: [POST, "/(?P<id>\\d+)/message"]
-        sideEffects:
-          - type: plugin:chat:update
-            entity: session
-            property: { key: messages, action: push, searchBy: id }
-            data: { id: _AUTONUM_, created: _NOW_, content: [] }
-            
-        responses: 
-          - [{ body: { message: "Hello World!" } }, 200]
-          - ["*", 401, { message: "Unauthorized" }]
+
+  - url: [GET, "/session/(?P<id>\\d+)"]
+    sideEffects:
+      - type: retrieve
+        entity: session
+        data:
+          searchBy: id
+          searchFrom: params
+    responses: 
+      - 
+        - isLoggedIn: true
+          params: 
+            id: "\\d+"
+        - 200
+        - {}
+
+  - url: [POST, "/session/(?P<id>\\d+)/message"]
+    sideEffects:
+      - type: plugin:chat:append
+        entity: session
+        property: { key: messages, searchBy: id }
+        data: 
+          appendTo: messages
+          searchFrom: params
+          searchBy: id
+          model:
+            id: _AUTONUM_
+            created: _NOW_
+            content: _FROM_BODY_:content
+    responses: 
+      - 
+        - isLoggedIn: true
+          body: { content: ".*" }
+          params: 
+            id: "\\d+"
+        - 200
+        - {}

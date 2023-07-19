@@ -15,20 +15,28 @@ type Config struct {
 	Name        string     `yaml:"name"`
 	Version     string     `yaml:"version"`
 	Port        int        `yaml:"port"`
-	Cors        []string   `yaml:"allowedOrigins"`
+	Cors        []string   `yaml:"cors"`
 	Description string     `yaml:"description"`
 	Endpoints   []Endpoint `yaml:"endpoints"`
 }
 
 type Endpoint struct {
-	Url       UrlConfig
-	Responses []ResponseConfig
+	Url         UrlConfig
+	SideEffects []SideEffectConfig `yaml:"sideEffects"`
+	Responses   []ResponseConfig
+	Childs      []Endpoint
+}
+
+type SideEffectConfig struct {
+	Type   string                 `yaml:"type"`
+	Entity string                 `yaml:"entity"`
+	Data   map[string]interface{} `yaml:"data"`
 }
 
 type ResponseConfig struct {
 	Request         Request
 	Status          int
-	ResponseBody    map[interface{}]interface{}
+	ResponseBody    map[string]interface{}
 	ResponseHeaders map[string]string
 }
 
@@ -54,7 +62,7 @@ func (r *ResponseConfig) UnmarshalYAML(value *yaml.Node) error {
 
 	var req Request
 	var status int
-	var body map[interface{}]interface{}
+	var body map[string]interface{}
 	var headers map[string]string
 
 	if rawReq.Kind != yaml.MappingNode && rawReq.Kind != yaml.ScalarNode {
@@ -121,10 +129,11 @@ func (r *ResponseConfig) UnmarshalYAML(value *yaml.Node) error {
 }
 
 type Request struct {
-	IsDefault bool
-	Params    map[string]interface{}
-	Body      map[string]interface{}
-	Query     map[string]interface{}
+	IsDefault  bool
+	Params     map[string]interface{} `yaml:"params"`
+	Body       map[string]interface{} `yaml:"body"`
+	Query      map[string]interface{} `yaml:"query"`
+	IsLoggedIn bool                   `yaml:"isLoggedIn"`
 }
 
 type UrlConfig struct {

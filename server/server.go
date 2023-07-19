@@ -12,6 +12,9 @@ import (
 
 	"moco/config"
 	"moco/server/cors"
+	db "moco/server/database"
+	se "moco/server/sideeffects"
+	"moco/server/structs"
 	"moco/utils/compare"
 	"moco/utils/logger"
 )
@@ -33,8 +36,14 @@ func Start(
 	mux.HandleFunc("/", makeHandler(endpoints))
 
 	handler := cors.New(cors.Options{
-		AllowedOrigins: allawedOrigins,
+		AllowedOrigins:   allawedOrigins,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
 	}).Handler(mux)
+
+	se.Init()
+	db.Init()
 
 	go serve(handler, url, fatalCh)
 	return <-fatalCh
@@ -73,12 +82,12 @@ func makeHandler(endpoints []config.Endpoint) func(http.ResponseWriter, *http.Re
 				req, err := GetRequest(r, endpoint.Url)
 
 				if err != nil {
-					log.Errore(err)
+					log.ErrorErr(err)
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
 
-				endpointHandler(w, r, req, endpoint.Responses)
+				endpointHandler(w, r, req, endpoint.Responses, endpoint.SideEffects)
 				return
 			}
 		}
@@ -87,9 +96,16 @@ func makeHandler(endpoints []config.Endpoint) func(http.ResponseWriter, *http.Re
 	}
 }
 
-func endpointHandler(w http.ResponseWriter, r *http.Request, request Request, responses []config.ResponseConfig) {
-	// first we check if the request.Params, request.Body and request.Query matches any of the responses[n].Request.Params, responses[n].Request.Body and responses[n].Request.Query
-	// all of them must match, and they do match, we return the response specified in the responses[n]
+func endpointHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+	request structs.Request,
+	responses []config.ResponseConfig,
+	sideeffects []config.SideEffectConfig,
+) {
+	// first we check if the request.Params, request.Body and request.Query matches
+	// any of the responses[n].Request.Params, responses[n].Request.Body and responses[n].Request.Query
+	// all of them must match, and if they do match, we return the response specified in the responses[n]
 	// if none of them match, we check if any of the responses[n].Request has IsDefault set to true, and if so, we return that response
 	// if none of them match, we return a 404
 	var defaultResponse *config.ResponseConfig
@@ -102,13 +118,17 @@ func endpointHandler(w http.ResponseWriter, r *http.Request, request Request, re
 			continue
 		}
 
-		log.Info("Checking response")
-
 		// check if request.Params matches response.Request.Params deeply
 		if compare.DeepEqual(response.Request.Params, request.Params) &&
 			compare.DeepEqual(response.Request.Body, request.Body) &&
 			compare.DeepEqual(response.Request.Query, request.Query) {
-			sendResponse(w, response)
+
+			if sideeffects != nil {
+				se.Handle(w, r, request, response, sideeffects, sendResponse)
+			} else {
+				sendResponse(w, r, response)
+			}
+
 			return
 		} else {
 			// Perform actions if any of the fields don't match
@@ -117,7 +137,7 @@ func endpointHandler(w http.ResponseWriter, r *http.Request, request Request, re
 	}
 
 	if defaultResponse != nil {
-		sendResponse(w, *defaultResponse)
+		sendResponse(w, r, *defaultResponse)
 		return
 	}
 
@@ -125,21 +145,17 @@ func endpointHandler(w http.ResponseWriter, r *http.Request, request Request, re
 	http.NotFound(w, r)
 }
 
-func sendResponse(w http.ResponseWriter, response config.ResponseConfig) {
+func sendResponse(w http.ResponseWriter, r *http.Request, response config.ResponseConfig) int {
 	headersToResponse := response.ResponseHeaders
 	statusCodeToResponse := response.Status
 
 	var bodyToResponse []byte
-	var marshableResponseBody = make(map[string]interface{})
-	for key, value := range response.ResponseBody {
-		marshableResponseBody[key.(string)] = value
-	}
-	bodyToResponse, err := json.Marshal(marshableResponseBody)
+	bodyToResponse, err := json.Marshal(response.ResponseBody)
 
 	if err != nil {
-		log.Errore(err)
+		log.ErrorErr(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return http.StatusInternalServerError
 	}
 
 	// set headers
@@ -152,9 +168,22 @@ func sendResponse(w http.ResponseWriter, response config.ResponseConfig) {
 		w.Header().Set("Content-Type", "application/json")
 	}
 
+	if response.Request.IsLoggedIn && r.Header.Get("Authorization") == "" {
+		// if the request is marked as logged in,
+		// but the Authorization header is not set, we return a 401
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Unauthorized",
+		})
+
+		return http.StatusUnauthorized
+	}
+
 	// send response
 	w.WriteHeader(statusCodeToResponse)
 	w.Write(bodyToResponse)
+
+	return statusCodeToResponse
 }
 
 func faviconHandler(w http.ResponseWriter) {
@@ -162,19 +191,8 @@ func faviconHandler(w http.ResponseWriter) {
 	w.Write(favicon)
 }
 
-type UrlConfig struct {
-	Method string
-	Path   string // (its a regex)
-}
-
-type Request struct {
-	Params map[string]interface{}
-	Body   map[string]interface{}
-	Query  map[string]interface{}
-}
-
-func GetRequest(r *http.Request, urlCfg config.UrlConfig) (Request, error) {
-	var request Request
+func GetRequest(r *http.Request, urlCfg config.UrlConfig) (structs.Request, error) {
+	var request structs.Request
 
 	// Parsing URL parameters
 	regex := regexp.MustCompile(urlCfg.Path)

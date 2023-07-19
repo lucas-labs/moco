@@ -27,7 +27,7 @@ func main() {
 		// show the header without contextual data
 		console.Header(nil)
 
-		log.Errore(err)
+		log.ErrorErr(err)
 		fmt.Println("Press any key to exit...")
 		fmt.Scanln(&input)
 		os.Exit(1)
@@ -49,7 +49,7 @@ func main() {
 	err = server.Start(config.Port, config.Cors, config.Endpoints)
 
 	if err != nil {
-		log.Panice(err)
+		log.PanicErr(err)
 		os.Exit(1)
 	}
 }

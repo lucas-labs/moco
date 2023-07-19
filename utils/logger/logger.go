@@ -34,7 +34,7 @@ func (l *Logger) Error(message ...string) {
 	l.log("ERROR", color.Red, message...)
 }
 
-func (l *Logger) Errore(err error) {
+func (l *Logger) ErrorErr(err error) {
 	l.log("ERROR", color.Red, err.Error())
 }
 
@@ -68,8 +68,8 @@ func (l *Logger) Panic(message ...string) {
 	l.log("PANIC", color.Red, message...)
 }
 
-// Panice logs a message with PANIC level
-func (l *Logger) Panice(err error) {
+// PanicErr logs a message with PANIC level
+func (l *Logger) PanicErr(err error) {
 	l.log("PANIC", color.Red, err.Error())
 }
 
