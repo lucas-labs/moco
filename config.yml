@@ -1,20 +1,15 @@
-name: zgpt-core-mock-config
+name: mock-api
 version: 1.0.0
 port: 22222
 cors:
   - "http://localhost:8080"
   - "http://localhost:3000"
   - "http://localhost:4200"
-description: ZGPT - Core API *mock*
+description: Mock API for testing purposes
 endpoints:
   - url: [GET, /ping]
     responses: [["*", 200, { message: "pong" }]]
 
-  - url: [GET, "/user/(?P<id>\\d+)"]
-    responses:
-      - [{ params: { id: "1" } }, 200, { id: 1, name: "lucas" }]
-      - ["*", 404, { message: "User not found" }]
-      
   - url: [GET, "/user"]
     responses: 
       - 
