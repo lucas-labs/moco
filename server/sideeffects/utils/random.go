@@ -83,6 +83,7 @@ func GetRandomParagraphs(n int) []string {
 	return paragraphs
 }
 
+// GetRandomWord returns a random word from the list of paragraphs
 func GetRandomWord() string {
 	// we get a random paragraph and then
 	// split it into words, then we return

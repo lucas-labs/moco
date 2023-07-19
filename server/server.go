@@ -118,7 +118,7 @@ func endpointHandler(
 			continue
 		}
 
-		// check if request.Params matches response.Request.Params deeply
+		// check if request.Params deeply matches response.Request.Params
 		if compare.DeepEqual(response.Request.Params, request.Params) &&
 			compare.DeepEqual(response.Request.Body, request.Body) &&
 			compare.DeepEqual(response.Request.Query, request.Query) {
