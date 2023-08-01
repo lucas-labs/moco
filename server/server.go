@@ -150,7 +150,15 @@ func sendResponse(w http.ResponseWriter, r *http.Request, response config.Respon
 	statusCodeToResponse := response.Status
 
 	var bodyToResponse []byte
-	bodyToResponse, err := json.Marshal(response.ResponseBody)
+	var err error
+
+	// if ResponseBody has only one key and it's called "_ARRAY_", we return an array
+	// of the values of the ResponseBody["_ARRAY_"] map
+	if len(response.ResponseBody) == 1 && response.ResponseBody["_ARRAY_"] != nil {
+		bodyToResponse, err = json.Marshal(response.ResponseBody["_ARRAY_"])
+	} else {
+		bodyToResponse, err = json.Marshal(response.ResponseBody)
+	}
 
 	if err != nil {
 		log.ErrorErr(err)

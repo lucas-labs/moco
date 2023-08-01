@@ -63,6 +63,7 @@ func (r *ResponseConfig) UnmarshalYAML(value *yaml.Node) error {
 	var req Request
 	var status int
 	var body map[string]interface{}
+	var arrayBody []interface{}
 	var headers map[string]string
 
 	if rawReq.Kind != yaml.MappingNode && rawReq.Kind != yaml.ScalarNode {
@@ -108,9 +109,18 @@ func (r *ResponseConfig) UnmarshalYAML(value *yaml.Node) error {
 		return fmt.Errorf("invalid status at response config, expected valid http status, example: 200")
 	}
 
-	err = rawBody.Decode(&body)
-	if err != nil {
-		return err
+	if rawBody.Kind == yaml.MappingNode {
+		err = rawBody.Decode(&body)
+		if err != nil {
+			return err
+		}
+	} else if rawBody.Kind == yaml.SequenceNode {
+		err = rawBody.Decode(&arrayBody)
+		if err != nil {
+			return err
+		}
+
+		body = map[string]interface{}{"_ARRAY_": arrayBody}
 	}
 
 	if rawHeaders != nil {

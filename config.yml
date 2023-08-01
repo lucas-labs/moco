@@ -1,15 +1,20 @@
-name: mock-api
+name: zgpt-core-mock-config
 version: 1.0.0
 port: 22222
 cors:
   - "http://localhost:8080"
   - "http://localhost:3000"
   - "http://localhost:4200"
-description: Mock API for testing purposes
+description: ZGPT - Core API *mock*
 endpoints:
   - url: [GET, /ping]
     responses: [["*", 200, { message: "pong" }]]
 
+  - url: [GET, "/user/(?P<id>\\d+)"]
+    responses:
+      - [{ params: { id: "1" } }, 200, { id: 1, name: "lucas" }]
+      - ["*", 404, { message: "User not found" }]
+      
   - url: [GET, "/user"]
     responses: 
       - 
@@ -22,10 +27,17 @@ endpoints:
     responses:
       - 
         - body:
+            username: usuariocomun
+            password: "qwerty1234"
+        - 200
+        - access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJ1c2VybmFtZSI6Imx1Y2FzIiwicm9sZXMiOlt7Im5hbWUiOiJCQVNJQ19VU0VSIiwicGVybWlzc2lvbnMiOlt7Im5hbWUiOiJzZXNzaW9uOmNyZWF0ZSJ9LHsibmFtZSI6InNlc3Npb246cmVhZCJ9LHsibmFtZSI6InNlc3Npb246dXBkYXRlIn1dfV19LCJleHAiOjE3NTI3MzQ0MjcsImlhdCI6MTY4ODA1ODE4OH0.Ru7EYgFZi0eV4PBdRfdSmcHqQEAQud-HHfigijMdP24
+          token_type: bearer
+      -
+        - body:
             username: lucas
             password: "lucas78787"
         - 200
-        - access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJ1c2VybmFtZSI6Imx1Y2FzIiwicm9sZXMiOlt7Im5hbWUiOiJCQVNJQ19VU0VSIiwicGVybWlzc2lvbnMiOlt7Im5hbWUiOiJzZXNzaW9uOmNyZWF0ZSJ9LHsibmFtZSI6InNlc3Npb246cmVhZCJ9LHsibmFtZSI6InNlc3Npb246dXBkYXRlIn1dfV19LCJleHAiOjE3NTI3MzQ0MjcsImlhdCI6MTY4ODA1ODE4OH0.Ru7EYgFZi0eV4PBdRfdSmcHqQEAQud-HHfigijMdP24
+        - access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJ1c2VybmFtZSI6Imx1Y2FzIiwicm9sZXMiOlt7Im5hbWUiOiJBRE1JTiIsInBlcm1pc3Npb25zIjpbeyJuYW1lIjoic2Vzc2lvbjpjcmVhdGUifSx7Im5hbWUiOiJzZXNzaW9uOnJlYWQifSx7Im5hbWUiOiJzZXNzaW9uOnVwZGF0ZSJ9LHsibmFtZSI6Im9wdGlvbi1ibG9jazp1cGRhdGUifV19XX0sImV4cCI6MTc1MjczNDQyNywiaWF0IjoxNjg4MDU4MTg4fQ.bhMLFleHaS18djDuUXsOcVa7xMWH4gYYfyMHnvSJwQU
           token_type: bearer
       - ["*", 401, { message: "Invalid credentials" }]
   
@@ -73,3 +85,374 @@ endpoints:
             id: "\\d+"
         - 200
         - {}
+
+  - url: [GET, "/option-block"]
+    responses:
+      -
+        - "*"
+        - 200
+        - [
+            {
+              "name": "azure-chat",
+              "description": "Opciones para el chat con Azure OpenAI",
+              "label": "Azure - Chat",
+              "version": 1,
+              "options": [
+                {
+                  "key": "api-version",
+                  "value": "2023-03-15-preview",
+                  "description": "Version de la API a utilizar para el chat",
+                  "type": "string"
+                },
+                {
+                  "key": "engine",
+                  "value": "gpt-35-turbo01",
+                  "description": "Motor a utilizar para generar títulos de documentos con Azure OpenAI",
+                  "type": "string"
+                },
+                {
+                  "key": "frequency-penalty",
+                  "value": "0",
+                  "description": "`frequency_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza las palabras que ya ha utilizado. Valores por encima de 0reducen la probabilidad de que se repitan palabras en la salida, mientras que los valores por debajo de 0 la aumentan.",
+                  "type": "float"
+                },
+                {
+                  "key": "human-message",
+                  "value": "{\"template\": \"Responde en base al documento y a los mensajes anteriores.\\nPregunta del usuario:\\n{message}\"}",
+                  "description": "Template para el mensaje de usuario del chat",
+                  "type": "prompt"
+                },
+                {
+                  "key": "max-tokens",
+                  "value": "800",
+                  "description": "`max_tokens` define la cantidad máxima de tokens que la IA puede generar. Si se alcanza este valor, la IA detiene la generación de texto.",
+                  "type": "int"
+                },
+                {
+                  "key": "presence-penalty",
+                  "value": "0",
+                  "description": "`presence_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza tokens dependiendo de si ya están presentes en la salida. Valores por encima de 0 aumentan la probabilidad de que la IA comience a \"hablar\" de un tema nuevo.",
+                  "type": "float"
+                },
+                {
+                  "key": "system-message",
+                  "value": "{\"template\": \"Eres un asistente que responde en base a documentación. Tu tarea es ayudar a los usuarios contestando sus preguntas basándote en la documentación proporcionada.  Recuerda que solo debes contestar en base a la documentación. Si la documentación no proporciona información suficiente para generar una respuesta a la pregunta deberás responder ÚNICAMENTE el siguiente mensaje: \\\"{idk_phrase}\\\".  Documento:\\n{context}\", \"context\": {\"idk_phrase\": \"No dispongo de esa información.\"}}",
+                  "description": "Template para el mensaje de sistema del chat",
+                  "type": "prompt"
+                },
+                {
+                  "key": "temperature",
+                  "value": "0.7",
+                  "description": "Un valor entre 0 y 1 que indica la **creatividad** o la azarosidad de las predicciones. Un valor alto hace que las predicciones sean más diversas, mientras que un valor bajo hace que sean más determinísticas y \"enfocadas\".",
+                  "type": "float"
+                },
+                {
+                  "key": "top-p",
+                  "value": "0.95",
+                  "description": "También conocido como *muestreo de nucleo*, `top_p` influye en cómo un modelo de IA selecciona palabras. Con un valor bajo, se centra en las opciones más probables, mientras que uno alto permite una selección más diversa.\n\nEs una forma de ajustar la creatividad y el enfoque de la IA",
+                  "type": "float"
+                }
+              ],
+              "latest": true
+            },
+            {
+              "name": "azure-classifier",
+              "description": "Opciones para el clasificador de textos con Azure OpenAI",
+              "label": "Azure - Classifier",
+              "version": 1,
+              "options": [
+                {
+                  "key": "api-version",
+                  "value": "2022-12-01",
+                  "description": "Version de la API a utilizar para el clasificador",
+                  "type": "string"
+                },
+                {
+                  "key": "engine",
+                  "value": "gpt-35-turbo01",
+                  "description": "Motor a utilizar para la clasificación de prompts con Azure OpenAI",
+                  "type": "string"
+                },
+                {
+                  "key": "frequency-penalty",
+                  "value": "0",
+                  "description": "`frequency_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza las palabras que ya ha utilizado. Valores por encima de 0reducen la probabilidad de que se repitan palabras en la salida, mientras que los valores por debajo de 0 la aumentan.",
+                  "type": "float"
+                },
+                {
+                  "key": "max-tokens",
+                  "value": "60",
+                  "description": "`max_tokens` define la cantidad máxima de tokens que la IA puede generar. Si se alcanza este valor, la IA detiene la generación de texto.",
+                  "type": "int"
+                },
+                {
+                  "key": "presence-penalty",
+                  "value": "0",
+                  "description": "`presence_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza tokens dependiendo de si ya están presentes en la salida. Valores por encima de 0 aumentan la probabilidad de que la IA comience a \"hablar\" de un tema nuevo.",
+                  "type": "float"
+                },
+                {
+                  "key": "prompt-template",
+                  "value": "{\"template\": \"Clasifique la siguiente interacción del personal de IT en 1 de las siguientes\\nCategorías: greetings, functional, technical, not_it, logs\\n\\nInteracción: Hola, buen dia\\nCategoría: greetings\\nFIN.\\n\\nInteracción: Como obtener el identificador de agente en la BUA\\nCategoría: technical\\nFIN.\\n\\nInteracción: En la iniciativa AR-789, cuáles son los riesgos?\\nCategoría: functional\\nFIN.\\n\\nInteracción: Como se realiza la emisión de una póliza\\nCategoría: functional\\nFIN.\\n\\nInteracción: Cómo se hace una torta de chocolate?\\nCategoría: not_it\\nFIN.\\n\\nInteracción: Cómo funciona BEA\\nCategoría: technical\\nFIN.\\n\\nInteracción: Qué tipo de autenticacion utiliza el servicio?\\nCategoría: technical\\nFIN.\\n\\nInteracción: Muéstrame los ultimos errores en el Log de BEA\\nCategoría: logs\\nFIN.\\n\\nInteracción: {user_message}\\nCategoría: \"}",
+                  "description": "Template para el prompt del clasificador",
+                  "type": "prompt"
+                },
+                {
+                  "key": "stop",
+                  "value": "FIN.",
+                  "description": "`stop` indica a la IA una secuencia de tokens que, si se generan, detendrán la generación de texto.",
+                  "type": "string_list"
+                },
+                {
+                  "key": "temperature",
+                  "value": "0",
+                  "description": "`temperature` para el clasificador. La temperatura es un valor entre 0 y 1 que indica la **creatividad** o la azarosidad de las predicciones.Un valor alto hace que las predicciones sean más diversas, mientras que un valor bajo hace que sean más determinísticas y \"enfocadas\".",
+                  "type": "float"
+                },
+                {
+                  "key": "top-p",
+                  "value": "1",
+                  "description": "`top_p`, también conocido como *muestreo de nucleo*, influye en cómo un modelo de IA selecciona palabras. Con un valor bajo, se centra en las opciones más probables, mientras que uno alto permite una selección más diversa.\n\nEs una forma de ajustar la creatividad y el enfoque de la IA",
+                  "type": "float"
+                }
+              ],
+              "latest": true
+            },
+            {
+              "name": "azure-commons",
+              "description": "Opciones compartidas para la conexión con Azure",
+              "label": "Azure - Common",
+              "version": 1,
+              "options": [
+                {
+                  "key": "api-base",
+                  "value": "https://zchatgpt3.openai.azure.com",
+                  "description": "URL base para la conexión con Azure OpenAI",
+                  "type": "string"
+                },
+                {
+                  "key": "api-key",
+                  "value": "38335c966f8f41cd9bb197d428813f42",
+                  "description": "API Key para la conexión con Azure OpenAI",
+                  "type": "string"
+                },
+                {
+                  "key": "api-type",
+                  "value": "azure",
+                  "description": "Tipo de API a utilizar para la conexión con Azure OpenAI",
+                  "type": "string"
+                }
+              ],
+              "latest": true
+            },
+            {
+              "name": "azure-docs-embeddings",
+              "description": "Opciones para embeddings de documentos con Azure",
+              "label": "Azure - Embeddings de documentos",
+              "version": 1,
+              "options": [
+                {
+                  "key": "api-version",
+                  "value": "2022-12-01",
+                  "description": "Version de la API a utilizar para embeddings         de documentos con Azure OpenAI",
+                  "type": "string"
+                },
+                {
+                  "key": "engine",
+                  "value": "text-embedding-ada-002",
+                  "description": "Motor a utilizar para embeddings de documentos con Azure OpenAI",
+                  "type": "string"
+                }
+              ],
+              "latest": true
+            },
+            {
+              "name": "azure-keywordizer",
+              "description": "Opciones para el generador de keywords con Azure OpenAI",
+              "label": "Azure - Keywordizer",
+              "version": 1,
+              "options": [
+                {
+                  "key": "api-version",
+                  "value": "2023-03-15-preview",
+                  "description": "Version de la API a utilizar para el generador de keywords",
+                  "type": "string"
+                },
+                {
+                  "key": "engine",
+                  "value": "gpt-35-turbo01",
+                  "description": "Motor a utilizar para generar keywords de documentos con Azure OpenAI",
+                  "type": "string"
+                },
+                {
+                  "key": "frequency-penalty",
+                  "value": "0",
+                  "description": "`frequency_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza las palabras que ya ha utilizado. Valores por encima de 0reducen la probabilidad de que se repitan palabras en la salida, mientras que los valores por debajo de 0 la aumentan.",
+                  "type": "float"
+                },
+                {
+                  "key": "human-message",
+                  "value": "{\"template\": \"Documento: {document}\"}",
+                  "description": "Template para el mensaje de usuario del generador de keywords",
+                  "type": "prompt"
+                },
+                {
+                  "key": "max-tokens",
+                  "value": "800",
+                  "description": "`max_tokens` define la cantidad máxima de tokens que la IA puede generar. Si se alcanza este valor, la IA detiene la generación de texto.",
+                  "type": "int"
+                },
+                {
+                  "key": "presence-penalty",
+                  "value": "0",
+                  "description": "`presence_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza tokens dependiendo de si ya están presentes en la salida. Valores por encima de 0 aumentan la probabilidad de que la IA comience a \"hablar\" de un tema nuevo.",
+                  "type": "float"
+                },
+                {
+                  "key": "system-message",
+                  "value": "{\"template\": \"Eres un asistente que realiza el primer paso en un proceso de identificación\\nde palabras clave en documentos, comienza analizando el texto del\\ndocumento que te proporcionen y lista los términos más importantes.\\nLos acrónimos y palabras en mayúsculas suelen ser importantes y por lo tanto\\npueden ser consideradas palabras claves. Verbos, nombres de personas, adjetivos\\ny adverbios suelen ser menos importantes y por lo tanto no deben\\nser considerados palabras claves.\\n\\nEjemplo:\\n\\nDocumento:\\nLas redes neuronales son un conjunto de algoritmos que intentan imitar el\\ncomportamiento del cerebro humano.\\n\\nRespuesta:\\nredes neuronales, algoritmos, cerebro humano\\n\\nDocumento:\\nLos pececillos de plata son insectos que se alimentan de materia orgánica\\nen descomposición.\\n\\nRespuesta:\\npececillos de plata,insectos,materia orgánica\\n\\nGenera un máximo de {max_keywords} keywords.\", \"context\": {\"max_keywords\": 10}}",
+                  "description": "Template para el mensaje de sistema del generador de keywords",
+                  "type": "prompt"
+                },
+                {
+                  "key": "temperature",
+                  "value": "0.7",
+                  "description": "Un valor entre 0 y 1 que indica la **creatividad** o la azarosidad de las predicciones. Un valor alto hace que las predicciones sean más diversas, mientras que un valor bajo hace que sean más determinísticas y \"enfocadas\".",
+                  "type": "float"
+                },
+                {
+                  "key": "top-p",
+                  "value": "0.95",
+                  "description": "También conocido como *muestreo de nucleo*, `top_p` influye en cómo un modelo de IA selecciona palabras. Con un valor bajo, se centra en las opciones más probables, mientras que uno alto permite una selección más diversa.\n\nEs una forma de ajustar la creatividad y el enfoque de la IA",
+                  "type": "float"
+                }
+              ],
+              "latest": true
+            },
+            {
+              "name": "azure-summarizer",
+              "description": "Opciones para el resumidor de textos con Azure OpenAI",
+              "label": "Azure - Summarizer",
+              "version": 1,
+              "options": [
+                {
+                  "key": "api-version",
+                  "value": "2023-03-15-preview",
+                  "description": "Version de la API a utilizar para el resumidor",
+                  "type": "string"
+                },
+                {
+                  "key": "engine",
+                  "value": "gpt-35-turbo01",
+                  "description": "Motor a utilizar para generar resumenes de documentos con Azure OpenAI",
+                  "type": "string"
+                },
+                {
+                  "key": "frequency-penalty",
+                  "value": "0",
+                  "description": "`frequency_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza las palabras que ya ha utilizado. Valores por encima de 0reducen la probabilidad de que se repitan palabras en la salida, mientras que los valores por debajo de 0 la aumentan.",
+                  "type": "float"
+                },
+                {
+                  "key": "human-message",
+                  "value": "{\"template\": \"Responde sin usar comillas. Analiza: {document}\"}",
+                  "description": "Template para el mensaje de usuario del resumidor",
+                  "type": "prompt"
+                },
+                {
+                  "key": "max-tokens",
+                  "value": "800",
+                  "description": "`max_tokens` define la cantidad máxima de tokens que la IA puede generar. Si se alcanza este valor, la IA detiene la generación de texto.",
+                  "type": "int"
+                },
+                {
+                  "key": "presence-penalty",
+                  "value": "0",
+                  "description": "`presence_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza tokens dependiendo de si ya están presentes en la salida. Valores por encima de 0 aumentan la probabilidad de que la IA comience a \"hablar\" de un tema nuevo.",
+                  "type": "float"
+                },
+                {
+                  "key": "system-message",
+                  "value": "{\"template\": \"Eres un asistente que realiza el primer paso en un proceso de Resumen en documentos de consulta. Comienza analizando el texto del documento que te proporcionen  e identifica los aspectos clave de cada oración. Realiza un resumen que incluya siempre todas las palabras que no son de uso común, las palabras escritas en mayúsculas, las siglas y los sustantivos que se refieren a componentes, tecnologías o entidades.\"}",
+                  "description": "Template para el mensaje de sistema del resumidor",
+                  "type": "prompt"
+                },
+                {
+                  "key": "temperature",
+                  "value": "0.7",
+                  "description": "Un valor entre 0 y 1 que indica la **creatividad** o la azarosidad de las predicciones. Un valor alto hace que las predicciones sean más diversas, mientras que un valor bajo hace que sean más determinísticas y \"enfocadas\".",
+                  "type": "float"
+                },
+                {
+                  "key": "top-p",
+                  "value": "0.95",
+                  "description": "También conocido como *muestreo de nucleo*, `top_p` influye en cómo un modelo de IA selecciona palabras. Con un valor bajo, se centra en las opciones más probables, mientras que uno alto permite una selección más diversa.\n\nEs una forma de ajustar la creatividad y el enfoque de la IA",
+                  "type": "float"
+                }
+              ],
+              "latest": true
+            },
+            {
+              "name": "azure-titleizer",
+              "description": "Opciones para el generador de títulos con Azure OpenAI",
+              "label": "Azure - Titleizer",
+              "version": 1,
+              "options": [
+                {
+                  "key": "api-version",
+                  "value": "2023-03-15-preview",
+                  "description": "Version de la API a utilizar para el titulador",
+                  "type": "string"
+                },
+                {
+                  "key": "engine",
+                  "value": "gpt-35-turbo01",
+                  "description": "Motor a utilizar para generar títulos de documentos con Azure OpenAI",
+                  "type": "string"
+                },
+                {
+                  "key": "frequency-penalty",
+                  "value": "0",
+                  "description": "`frequency_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza las palabras que ya ha utilizado. Valores por encima de 0reducen la probabilidad de que se repitan palabras en la salida, mientras que los valores por debajo de 0 la aumentan.",
+                  "type": "float"
+                },
+                {
+                  "key": "human-message",
+                  "value": "{\"template\": \"Documento: {document}\"}",
+                  "description": "Template para el mensaje de usuario del titulador",
+                  "type": "prompt"
+                },
+                {
+                  "key": "max-tokens",
+                  "value": "800",
+                  "description": "`max_tokens` define la cantidad máxima de tokens que la IA puede generar. Si se alcanza este valor, la IA detiene la generación de texto.",
+                  "type": "int"
+                },
+                {
+                  "key": "presence-penalty",
+                  "value": "0",
+                  "description": "`presence_penalty` es un valor entre -2 y 2 que impacta en cómo la IA penaliza tokens dependiendo de si ya están presentes en la salida. Valores por encima de 0 aumentan la probabilidad de que la IA comience a \"hablar\" de un tema nuevo.",
+                  "type": "float"
+                },
+                {
+                  "key": "system-message",
+                  "value": "{\"template\": \"¿Qué nombre o título, lo más descriptivo posible, podría tener el documento si como mínimo se pidieran {min_words} palabras y máximo {max_words}?\", \"context\": {\"min_words\": 20, \"max_words\": 30}}",
+                  "description": "Template para el mensaje de sistema del titulador",
+                  "type": "prompt"
+                },
+                {
+                  "key": "temperature",
+                  "value": "0.7",
+                  "description": "Un valor entre 0 y 1 que indica la **creatividad** o la azarosidad de las predicciones. Un valor alto hace que las predicciones sean más diversas, mientras que un valor bajo hace que sean más determinísticas y \"enfocadas\".",
+                  "type": "float"
+                },
+                {
+                  "key": "top-p",
+                  "value": "0.95",
+                  "description": "También conocido como *muestreo de nucleo*, `top_p` influye en cómo un modelo de IA selecciona palabras. Con un valor bajo, se centra en las opciones más probables, mientras que uno alto permite una selección más diversa.\n\nEs una forma de ajustar la creatividad y el enfoque de la IA",
+                  "type": "float"
+                }
+              ],
+              "latest": true
+            }
+          ]
